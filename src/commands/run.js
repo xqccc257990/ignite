@@ -31,7 +31,7 @@ module.exports = async function (context) {
 
   print.info('')
   if (isIgniteDirectory(process.cwd())) {
-    print.info(green(`Ignite ${igniteVersion} - let's do this! Starting Ignite app`))
+    print.info(green(`Ignite ${igniteVersion} - let's do this! Starting Ignite React Native ${state.rnversion} app`))
   } else {
     print.info(green(`Ignite ${igniteVersion} is starting up your React Native ${state.rnversion} app`))
   }
@@ -43,14 +43,16 @@ module.exports = async function (context) {
   print.info('')
   const spinner = print.spin({
     spinner: {
-      "interval": 100,
+      "interval": 240,
       "frames": [
-        "  ◜",
-        "  ◠",
-        "  ◝",
-        "  ◟",
-        "  ◡",
-        "  ◞",
+        " 🌑",
+        " 🌒",
+        " 🌓",
+        " 🌔",
+        " 🌕",
+        " 🌖",
+        " 🌗",
+        " 🌘",
       ]
     }
   })
