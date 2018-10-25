@@ -122,20 +122,11 @@ module.exports = async function (context) {
       // filesystem.write(genFilename, selectedGist.body.files['PLUGINS.md'].content)
       break
     case 'publish':
-
       const spinner = print.spin()
       
       spinner.start()
 
-      // check if a library exists and if we even have permission to publish to it
-      // const result = await gists.list('jamonholmgren', {})
-        // if doesn't exist, what now?
-        // if doesn't have permission, what now?
-        // exit gracefully, say "you don't have permission" or whatever        
-
-      // FOR NOW, WE'LL JUST PRETEND THAT INFINITE RED'S LIBRARY IS THE ONLY ONE
-      
-      // Check if we've already cloned the library
+      // Clone library if we haven't yet
       spinner.text = 'Checking for library index...'
 
       const igniteLibraryDir = `${__dirname}/../../ignite-library`
@@ -152,21 +143,18 @@ module.exports = async function (context) {
 
         spinner.text = 'Component library not found, cloning...'
         
-        // Clone it
+        // Clone the library
         await system.run(`git clone git@github.com:infinitered/ignite-library.git ${igniteLibraryDir}`)
       }
       
-      spinner.stop()
-
-
-      // Ask for name, description, tags (comma separated)
-      const resp = await prompt.ask({
+      // Ask for component name
+      const answer = await prompt.ask({
         type: 'input',
         name: 'name',
         message: 'What is your component\'s name?'
       })
 
-      const componentName = resp.name
+      const componentName = answer.name
 
       if (!componentName) {
         console.log('Component name required')
@@ -174,7 +162,8 @@ module.exports = async function (context) {
         process.exit(1)
       }
 
-      // Get the component index
+      // Get the library index
+
       // NOTE doesn't work if named 'components' for some reason ¯\_(ツ)_/¯
       const componentz = JSON.parse(filesystem.read(`${igniteLibraryDir}/index.json`)).components
 
@@ -185,39 +174,22 @@ module.exports = async function (context) {
         console.log('A component already exists with that name in this library!')
         process.exit(1)
       }
-      
-      // Add the component to our index
-      console.log('That name is available, we\'re good to go!')
 
-      const newComponent = {
-        name: componentName,
-        description: 'A snazzy component',
-        gist: '',
-        tags: '',
-      }
-
-      componentz.push(newComponent)
-
-      const newFileBody = JSON.stringify({components: componentz})
-      
-      // Write to file
-      filesystem.write(`${igniteLibraryDir}/index.json`, newFileBody)
-
-      // Stage and commit
-      process.chdir('ignite-library')
-      
-      try {
-        await system.run(`git add index.json && git commit -m "Added component ${componentName}"`)
-      } catch (error) {
-        console.log('error', error)
-      }
-      
-      process.chdir('..')
-      
-      // Push component onto list of components
+      // Ensure that component file exists
+      // (file with name matching)
       const componentPath = `${process.cwd()}/${componentName}.js`
 
-      // check if the input file exists, 
+      const componentFileExists = filesystem.exists(componentPath)
+      
+      // exit gracefully if not
+      if (!componentFileExists) {
+        console.log('Input file doesn\'t exist, bailing out...')
+        process.exit(1)
+      }
+
+      // Conditions are clear! We can add the component
+
+      // Read the component file
       const exists = filesystem.exists(componentPath)
       
       // exit gracefully if not exists
@@ -226,23 +198,36 @@ module.exports = async function (context) {
         process.exit(1)
       }
 
-      console.log('Component file found, good job!')
+      // Create the component gist
+      console.log('Adding component gist')
 
-      // read the file
-      // const file = filesystem.read(filename)
+      // Add component to library index, stage, commit, and push
+      componentz.push({
+        name: componentName,
+        description: 'A snazzy component',
+        gist: '',
+        tags: '',
+      })
 
-      return
+      const newFileBody = JSON.stringify({components: componentz})
+      
+      filesystem.write(`${igniteLibraryDir}/index.json`, newFileBody)
 
-      // check if library index already contains this component
+      process.chdir('ignite-library')
+      
+      try {
+        // NOTE not actually pushing up yet; just testing
+        await system.run(`git add index.json && git commit -m "Added component ${componentName}"`)
+      } catch (error) {
+        console.log('error', error)
+      }
 
-      // if component already exists, get that gist so we can update its contents
-        // update the gist contents                                
+      process.chdir('..')
 
-      // If component doesn't exist, create the gist
-      gists.create({files: {[filename]: { content: file }}})
 
-      // update the library index with the new (or updated) gist
-            
+      // We're done!
+      spinner.stop()
+
       break
     case 'update':
       console.log('updating' + filename)
