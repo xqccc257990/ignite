@@ -208,7 +208,6 @@ module.exports = async function (context) {
 
       // Create the component gist
       spinner.text = 'Adding component gist'
-      // Creating gists // 2fa2ae76cc8da96dda1361219cf20f54
       try {
         const res = await gists.create({
           description: "Just testing this",
