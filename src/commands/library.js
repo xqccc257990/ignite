@@ -220,7 +220,6 @@ module.exports = async function (context) {
         })
 
         const gistId = res.body.id
-        console.log(gistId)
 
         // Add component to library index, stage, commit, and push
         componentIndex.push({
