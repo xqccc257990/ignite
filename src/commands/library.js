@@ -6,11 +6,11 @@ const LIBRARY_INDEX_GIST = 'fd8513a906c8da31984c68064f0498e6'
 
 const Gists = require('gists');
 const gists = new Gists({
-  token: '500595bb413af3debf686837ccde5e543bf1f036'
+  token: process.env['IGNITE_GITHUB_TOKEN']
 });
 
 module.exports = async function (context) {
-  const { parameters, filesystem, print, prompt } = context
+  const { parameters, filesystem, print, prompt, system } = context
 
   const filename = parameters.third
 
@@ -38,27 +38,85 @@ module.exports = async function (context) {
       filesystem.write('GENERATED_FILE.md', selectedGist.body.files['PLUGINS.md'].content)
       break
     case 'publish':
+
+      const spinner = print.spin()
+      
+      spinner.start()
+
       // check if a library exists and if we even have permission to publish to it
       // const result = await gists.list('jamonholmgren', {})
         // if doesn't exist, what now?
         // if doesn't have permission, what now?
         // exit gracefully, say "you don't have permission" or whatever        
 
+      // FOR NOW, WE'LL JUST PRETEND THAT INFINITE RED'S LIBRARY IS THE ONLY ONE
+      
+      // Check if we've already cloned the library
+      spinner.text = 'Checking for library index...'
+
+      const igniteLibraryDir = `${__dirname}/../../ignite-library`
+
+      const repoExists = await filesystem.exists(igniteLibraryDir)
+
+      if (repoExists) {
+        spinner.succeed()
+
+        spinner.text = 'Component library found!'
+
+      } else {
+        spinner.succeed()
+
+        spinner.text = 'Component library not found, cloning...'
+        
+        // Clone it
+        await system.run(`git clone git@github.com:infinitered/ignite-library.git ${igniteLibraryDir}`)
+      }
+      
+      spinner.stop()
+
+
+      // Ask for name, description, tags (comma separated)
+      const resp = await prompt.ask({
+        type: 'input',
+        name: 'name',
+        message: 'What is your component\'s name?'
+      })
+
+      const componentName = resp.name
+
+      if (!componentName) {
+        console.log('Component name required')
+
+        process.exit(1)
+      }
+
+      // Get the component index
+      // NOTE doesn't work if named 'components' for some reason ¯\_(ツ)_/¯
+      const componentz = JSON.parse(filesystem.read(`${igniteLibraryDir}/index.json`)).components
+
+      // Check for existing component with same name + description combination
+      const existingComponent = componentz.find( c => c.name === componentName )
+
+      if (existingComponent) {
+        console.log('A component already exists with that name in this library!')
+        process.exit(1)
+      } else {
+        console.log('That name is available, we\'re good to go!')
+      }
+
+      // Stage and commit
+      
+      // Push
+      spinner.succeed()
+
       // check if the file exists, 
-      const exists = filesystem.exists(filename)
+      const exists = filesystem.exists(`${process.cwd}/filename`)
       
       // exit gracefully if not exists
       if (!exists) {
         console.log('Input file doesn\'t exist, bailing out...')
         process.exit(1)
       }
-
-      // ask for name, description, tags (comma separated)
-      await prompt.ask({
-        type: 'input',
-        name: 'name',
-        message: 'What is your component\'s name?'
-      })
 
       // read the file
       const file = filesystem.read(filename)
