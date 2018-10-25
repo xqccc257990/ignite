@@ -2,11 +2,58 @@
 // @cliAlias l
 // ----------------------------------------------------------------------------
 
+/**
+ * NOTES:
+ * 
+ * This POC is working (kinda).
+ * 
+ * ignite library button github=carlinisaacson
+ * 
+ * defaults to infinitered
+ */
+
 const LIBRARY_INDEX_GIST = 'fd8513a906c8da31984c68064f0498e6'
+const LIBRARY_INDEX_URL = `https://raw.githubusercontent.com/{parameters.options.github || 'infinitered'}/ignite-library/master/library.json`
+
+const FAKE_TEMPLATE = `
+import * as React from "react"
+import { View, ViewStyle } from "react-native"
+
+export interface {{ NAME }}Props {
+  /**
+   * Text which is looked up via i18n.
+   */
+  tx?: string
+
+  text?: string
+
+  /**
+   * An optional style override useful for padding & margin.
+   */
+  style?: ViewStyle
+}
+
+/**
+ * Stateless functional component for your needs
+ *
+ * Component description here for TypeScript tips.
+ */
+export function <%= props.pascalName %>(props: <%= props.pascalName %>Props) {
+  // grab the props
+  const { tx, text, style, ...rest } = props
+  const textStyle = { }
+
+  return (
+    <View style={style} {...rest}>
+      <Text tx={tx} text={text} style={textStyle} />
+    </View>
+  )
+}
+`
 
 const Gists = require('gists');
 const gists = new Gists({
-  token: '500595bb413af3debf686837ccde5e543bf1f036'
+  token: process.env['IGNITE_GITHUB_TOKEN']
 });
 
 module.exports = async function (context) {
@@ -17,10 +64,23 @@ module.exports = async function (context) {
   switch (parameters.second.toLowerCase()) {
     case 'search':
       // go out and get the Infinite Red component library
-      const res = await gists.get(LIBRARY_INDEX_GIST)
+      let res
+      try {
+        res = await gists.get(LIBRARY_INDEX_GIST)
+      } catch (e) {
+        // if not found, exit gracefully 
+        print.info(`Can't find the Ignite library index at (https://gist.github.com/jamonholmgren/${LIBRARY_INDEX_GIST})`)
+        print.info('')
+        print.info(`You may have set your env variable incorrectly (Not really, this is COMING SOON) or don't have a Personal Access Token set (more likely!)`)
+        print.info(`Go to https://github.com/settings/tokens to generate one and then run this in terminal:`)
+        print.info(`export IGNITE_GITHUB_TOKEN='tokenhere'`)
+        process.exit(e.code)
+      }
 
+      // parse out the components
       const components = JSON.parse(res.body.files['library-index.json'].content).components
 
+      // search for a component
       const searchResults = components.filter(comp => comp.name.includes(filename))
 
       // console.dir(searchResults)
@@ -35,7 +95,31 @@ module.exports = async function (context) {
 
       const selectedGist = await gists.get(selectedResult.gist)
 
-      filesystem.write('GENERATED_FILE.md', selectedGist.body.files['PLUGINS.md'].content)
+      // have a new gist, now fill out the template
+      print.info('')
+      print.info(`Generating component`)
+      print.info('')
+      const genFile = await prompt.ask({
+        type: 'input',
+        name: 'filename',
+        message: 'Filename to generate:'
+      })
+
+      const genFilename = genFile.filename
+
+      print.info('')
+      print.info(`Generating component into ${process.pwd() + '/' + genFilename}`)
+      print.info('')
+
+      print.info(FAKE_TEMPLATE)
+      // this is where you fill out the template in terminal
+      // it's replacing various things in the snippet, like
+      //      export interface {{ NAME }}Props {
+      // here you'd replace the {{ NAME }} interactively
+
+      // then write to the filesystem
+
+      // filesystem.write(genFilename, selectedGist.body.files['PLUGINS.md'].content)
       break
     case 'publish':
       // check if a library exists and if we even have permission to publish to it
