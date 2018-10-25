@@ -206,17 +206,6 @@ module.exports = async function (context) {
       spinner.text = 'We are go for launch!'
       spinner.succeed()
 
-      // Read the component file
-      const exists = filesystem.exists(componentPath)
-      
-      // exit gracefully if not exists
-      if (!exists) {
-        spinner.fail()
-        spinner.text = 'Input file doesn\'t exist, bailing out...'
-        spinner.fail()
-        process.exit(1)
-      }
-
       // Create the component gist
       spinner.text = 'Adding component gist'
       // Creating gists // 2fa2ae76cc8da96dda1361219cf20f54
@@ -226,7 +215,7 @@ module.exports = async function (context) {
           public: false,
           files: {
             [componentName]: {
-              content: filesystem.read(componentName)
+              content: filesystem.read(componentPath)
             }
           }
         })
