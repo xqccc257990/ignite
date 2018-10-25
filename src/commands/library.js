@@ -211,7 +211,7 @@ module.exports = async function (context) {
       try {
         const res = await gists.create({
           description: "Just testing this",
-          public: false,
+          public: true,
           files: {
             [componentName]: {
               content: filesystem.read(componentPath)
