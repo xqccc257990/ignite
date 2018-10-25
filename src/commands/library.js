@@ -187,7 +187,7 @@ module.exports = async function (context) {
       // Ensure that component file exists
       // (file with name matching)
       spinner.text = 'Finding your component'
-      const componentPath = `${process.cwd()}/${componentName}.js`
+      const componentPath = `${process.cwd()}/${componentName}.tsx`
 
       const componentFileExists = filesystem.exists(componentPath)
       
@@ -218,18 +218,22 @@ module.exports = async function (context) {
             }
           }
         })
+
+        const gistId = res.body.id
+        console.log(gistId)
+
+        // Add component to library index, stage, commit, and push
+        componentIndex.push({
+          name: componentName,
+          description: 'A snazzy component',
+          gist: gistId,
+          tags: '',
+        })
+
       } catch (e) {
         console.log(e)
       }
       spinner.succeed()
-
-      // Add component to library index, stage, commit, and push
-      componentIndex.push({
-        name: componentName,
-        description: 'A snazzy component',
-        gist: '',
-        tags: '',
-      })
 
       const newFileBody = JSON.stringify({components: componentIndex})
       
