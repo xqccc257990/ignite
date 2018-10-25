@@ -37,8 +37,42 @@ module.exports = async function (context) {
 
       filesystem.write('GENERATED_FILE.md', selectedGist.body.files['PLUGINS.md'].content)
       break
-    case 'add':
-      console.log('adding' + filename)
+    case 'publish':
+      // check if a library exists and if we even have permission to publish to it
+      // const result = await gists.list('jamonholmgren', {})
+        // if doesn't exist, what now?
+        // if doesn't have permission, what now?
+        // exit gracefully, say "you don't have permission" or whatever        
+
+      // check if the file exists, 
+      const exists = filesystem.exists(filename)
+      
+      // exit gracefully if not exists
+      if (!exists) {
+        console.log('Input file doesn\'t exist, bailing out...')
+        process.exit(1)
+      }
+
+      // ask for name, description, tags (comma separated)
+      await prompt.ask({
+        type: 'input',
+        name: 'name',
+        message: 'What is your component\'s name?'
+      })
+
+      // read the file
+      const file = filesystem.read(filename)
+
+      // check if library index already contains this component
+
+      // if component already exists, get that gist so we can update its contents
+        // update the gist contents                                
+
+      // If component doesn't exist, create the gist
+      gists.create({files: {[filename]: { content: file }}})
+
+      // update the library index with the new (or updated) gist
+            
       break
     case 'update':
       console.log('updating' + filename)
