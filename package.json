@@ -33,6 +33,7 @@
   "dependencies": {
     "execa": "0.8.0",
     "fs-jetpack": "1.2.0",
+    "gists": "^2.0.0",
     "gluegun": "0.20.0",
     "gluegun-patching": "0.3.0",
     "minimist": "1.2.0",
