@@ -184,17 +184,41 @@ module.exports = async function (context) {
       if (existingComponent) {
         console.log('A component already exists with that name in this library!')
         process.exit(1)
-      } else {
-        console.log('That name is available, we\'re good to go!')
+      }
+      
+      // Add the component to our index
+      console.log('That name is available, we\'re good to go!')
+
+      const newComponent = {
+        name: componentName,
+        description: 'A snazzy component',
+        gist: '',
+        tags: '',
       }
 
-      // Stage and commit
-      
-      // Push
-      spinner.succeed()
+      componentz.push(newComponent)
 
-      // check if the file exists, 
-      const exists = filesystem.exists(`${process.cwd}/filename`)
+      const newFileBody = JSON.stringify({components: componentz})
+      
+      // Write to file
+      filesystem.write(`${igniteLibraryDir}/index.json`, newFileBody)
+
+      // Stage and commit
+      process.chdir('ignite-library')
+      
+      try {
+        await system.run(`git add index.json && git commit -m "Added component ${componentName}"`)
+      } catch (error) {
+        console.log('error', error)
+      }
+      
+      process.chdir('..')
+      
+      // Push component onto list of components
+      const componentPath = `${process.cwd()}/${componentName}.js`
+
+      // check if the input file exists, 
+      const exists = filesystem.exists(componentPath)
       
       // exit gracefully if not exists
       if (!exists) {
@@ -202,8 +226,12 @@ module.exports = async function (context) {
         process.exit(1)
       }
 
+      console.log('Component file found, good job!')
+
       // read the file
-      const file = filesystem.read(filename)
+      // const file = filesystem.read(filename)
+
+      return
 
       // check if library index already contains this component
 
