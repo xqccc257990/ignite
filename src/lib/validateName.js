@@ -5,12 +5,26 @@ const prependIgnite = require('./prependIgnite')
  * Checks whether a plugin name was given and errors if not.
  * Also prepends `ignite-*` if plugin name didn't include it.
  *
- * @param {String} pluginName The provided plugin name.
+ * @param {String} rawPluginName The provided plugin name.
  * @param {Object} context The gluegun context.
  * @returns {String} The normalized name.
  */
-const validateName = (pluginName, context) => {
+const validateName = (rawPluginName, context) => {
   const { strings, print } = context
+  const scopeRe = /^@([a-z0-9-_])\/(.*)/i
+  const isScopedPackage = (pluginName) => {
+    return scopeRe.test(pluginName)
+  }
+
+  var pluginName, scopeName
+
+  if (isScopedPackage(rawPluginName)) {
+    const matches = scopeRe.exec(rawPluginName)
+    scopeName = matches[0]
+    pluginName = matches[1]
+  } else {
+    pluginName = rawPluginName
+  }
 
   if (strings.isBlank(pluginName)) {
     print.info(`ignite plugin new ignite-foo\n`)
@@ -25,7 +39,12 @@ const validateName = (pluginName, context) => {
   }
 
   // Force prepend `ignite-*` to plugin name
-  return prependIgnite(pluginName)
+  if (scopeName) {
+    return `${scopeName}/${prependIgnite(pluginName)}`
+  } else {
+    return prependIgnite(pluginName)
+  }
+
 }
 
 module.exports = validateName
