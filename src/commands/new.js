@@ -13,7 +13,7 @@ const { forEach, keys, reduce, concat, trim, isEmpty, match, not, toLower } = re
  *
  * @param {any} context - The gluegun context.
  */
-async function command (context) {
+async function command(context) {
   const { parameters, strings, print, system, filesystem, ignite, prompt } = context
   const { isBlank, upperFirst, camelCase } = strings
   const { log } = ignite
@@ -110,29 +110,31 @@ async function command (context) {
   if ((boilerplateName || '').includes(path.sep)) {
     boilerplateName = filesystem.path(boilerplateName)
   }
-  const andross = 'Andross (React Navigation, Redux, & Redux Saga'
-  const bowser = 'Bowser (React Navigation, MobX State Tree, & TypeScript)'
+
+  // if no boilerplate name provided, ask which one they prefer to use
+  const boilerplates = {
+    'ir-boilerplate-barebones': 'Bare React Native Project',
+    'ir-boilerplate-andross': 'Andross by Infinite Red: React Navigation, Redux, & Redux Saga. https://github.com/infinitered/ignite-ir-boilerplate-andross',
+    'ir-boilerplate-bowser': 'Bowser by Infinite Red: React Navigation, MobX State Tree, & TypeScript. https://github.com/infinitered/ignite-ir-boilerplate-bowser',
+    'sep': '~~~',
+    'base-plate': 'base-plate by Justin Lane: A minimalistic boilerplate setup for Ignite. https://github.com/juddey/ignite-base-plate',
+    'expo-boilerplate': 'expo by Jimmy Bosse: Expo-powered Ignite boilerplate. https://github.com/jbosse/ignite-expo-boilerplate',
+    'jhipster': 'jhipster by Jon Ruddell: A React Native boilerplate for JHipster apps. https://github.com/ruddell/ignite-jhipster',
+    'kryptonite': 'kryptonite by Justin Lane: Ignite for React-based single page web apps. https://github.com/juddey/ignite-kryptonite',
+  }
   if (!boilerplateName) {
     const { boilerplate } = await context.prompt.ask([
       {
         name: 'boilerplate',
         message: 'Which boilerplate would you like to use?',
         type: 'list',
-        choices: [
-          andross,
-          bowser
-        ]
+        choices: Object.values(boilerplates)
       }
     ])
-    switch (boilerplate) {
-      case bowser:
-        boilerplateName = 'ir-boilerplate-bowser'
-        break
-      case andross:
-      default:
-        boilerplateName = 'ir-boilerplate-andross'
-        break
-    }
+
+    // TODO: use a real Enquirer separator
+    if (boilerplate === 'sep') process.exit(1)
+    boilerplateName = boilerplate
   }
 
   // make & jump into the project directory
