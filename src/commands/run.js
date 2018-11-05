@@ -8,55 +8,76 @@ const crossSpawn = require('cross-spawn')
 
 const igniteVersion = require('../../package.json').version
 
+const SCROLLBACK_LINES = 10
+
 module.exports = async function (context) {
   const { print, filesystem, parameters } = context
   const { colors, checkmark, xmark } = print
   const { green, gray, red } = colors
 
   const state = {
-    compiles: 0,
-    warnings: 0,
-    existingBuild: false,
-    status: 'building',
-    scrollback: [],
-    platform: 'unknown',
-    rnversion: reactNativeVersion(), // async promise
-    androidDevices: runningAndroidDevices(), // async promise
+    ios: {
+      compiles: 0,
+      warnings: 0,
+      existingBuild: filesystem.exists('./ios/build'),
+      status: 'starting',
+      scrollback: [],
+    },
+    android: {
+      compiles: 0,
+      warnings: 0,
+      existingBuild: filesystem.exists('./android/app/build'),
+      status: 'starting',
+      scrollback: [],
+      devices: runningAndroidDevices(), // kick off async promise
+    },
+    ignite: isIgniteDirectory(process.cwd()),
+    rnversion: reactNativeVersion(), // kick off async promise
   }
 
+  // read React Native version
   state.rnversion = await state.rnversion
 
+  // intro (based on whether it's an Ignite boilerplate or not)
   print.info('')
-  if (isIgniteDirectory(process.cwd())) {
+  if (state.ignite) {
     print.info(green(`Ignite ${igniteVersion} - let's do this! Starting Ignite React Native ${state.rnversion} app`))
   } else {
     print.info(green(`Ignite ${igniteVersion} is starting up your React Native ${state.rnversion} app`))
   }
 
+  // kick off the requested builds (and stop the other)
   if (['android', 'a'].includes(parameters.second)) {
-    state.platform = 'android'
+    state.ios.status = 'stopped'
   } else if (['ios', 'i'].includes(parameters.second)) {
-    state.platform = 'ios'
+    state.android.status = 'stopped'
   } else {
-    // if there is an android device running, use that
-    state.androidDevices = await state.androidDevices
-    if (state.androidDevices.length > 0) {
-      print.info(`Found ${state.androidDevices.length} Android device(s) -- running Android`)
-      state.platform = 'android'
+    // assume we're building both
+  }
+
+  // make sure we have some android devices
+  if (state.android.status === 'starting') {
+    state.android.devices = await state.android.devices
+    if (state.android.devices.length > 0) {
+      print.info(gray(`Found ${state.android.devices.length} Android device(s)`))
     } else {
-      print.info(green(`Running iOS`))
-      state.platform = 'ios'
+      print.info(gray(`No Android devices found`))
+      state.android.status = 'stopped'
     }
   }
 
-  const command = `react-native run-${state.platform}`
+  let platformInfo = []
+  if (state.ios.status === 'starting') platformInfo.push('iOS')
+  if (state.android.status === 'starting') platformInfo.push('Android')
 
-  state.existingBuild = state.platform === 'ios'
-    ? filesystem.exists('./ios/build')
-    : filesystem.exists('./android/app/build')
-
-  if (!state.existingBuild) {
-    print.info(gray('This is the first build, so compiling will take considerably longer'))
+  print.info('')
+  if (platformInfo.length === 2) {
+    print.info(`Starting React Native project for ${platformInfo.join(' and ')} concurrently.`)
+  } else if (platformInfo.length === 1) {
+    print.info(`Starting React Native project for ${platformInfo[0]} only.`)
+  } else {
+    print.info(`Can't build app -- check that your simulators/emulators are running.`)
+    process.exit(1)
   }
 
   print.info('')
@@ -98,13 +119,14 @@ module.exports = async function (context) {
   updateSpinner('cyan', 'Getting ready')
 
   const onProgress = (platform) => (data) => {
-    if (state.status === 'error') return
+    if (state[platform].status === 'error') return
 
     const s = trim(data.toString())
 
+    // keep last n lines of scrollback
     const scrollbackLine = s.length <= 160 ? s : s.slice(0, 50) + '...' + s.slice(-50)
-    if (scrollbackLine.length > 0) state.scrollback.push(scrollbackLine)
-    state.scrollback = state.scrollback.slice(-10)
+    if (scrollbackLine.length > 0) state[platform].scrollback.push(scrollbackLine)
+    state[platform].scrollback = state[platform].scrollback.slice(-1 * SCROLLBACK_LINES)
 
     if (context.parameters.options.debug) {
       console.log(gray(s))
@@ -122,27 +144,27 @@ module.exports = async function (context) {
 
       } else if (s.includes('Building and installing the app on the device')) {
         progress(platform, 'Bundling provided via Packager')
-        updateSpinner('yellow', 'Compiling project')
+        updateSpinner('yellow', platform + ': Compiling project')
 
       } else if (s.includes('Installing APK')) {
         progress(platform, `Project compiled successfully`)
-        updateSpinner('yellow', 'Installing APK')
+        updateSpinner('yellow', platform + ': Installing APK')
 
       } else if (s.includes('Installed on')) {
         progress(platform, 'Installed app on simulator')
-        updateSpinner('green', 'Launching')
+        updateSpinner('green', platform + ': Launching')
 
       } else if (s.includes('BUILD SUCCESSFUL')) {
         progress(platform, 'Build successful')
-        updateSpinner('green', 'Launching')
+        updateSpinner('green', platform + ': Launching')
 
       } else if (s.includes('BUILD FAILED')) {
         failed(`Project failed to compile`)
-        updateSpinner('red', 'Shutting down')
-        state.status = 'error'
+        updateSpinner('red', platform + ': Shutting down')
+        state[platform].status = 'error'
 
       } else if (s.includes('Note: ')) {
-        state.warnings += 1
+        state[platform].warnings += 1
 
       }
     }
@@ -151,18 +173,18 @@ module.exports = async function (context) {
     if (platform === 'ios') {
       if (s.includes('Found Xcode project')) {
         progress(platform, 'Found Xcode project')
-        updateSpinner('yellow', 'Launching iPhone simulator')
+        updateSpinner('yellow', platform + ': Launching iPhone simulator')
 
       } else if (s.includes('Launching iPhone ')) {
-        updateSpinner('yellow', 'Launching iPhone simulator')
+        updateSpinner('yellow', platform + ': Launching iPhone simulator')
 
       } else if (s.includes('Building using "xcodebuild -project')) {
         progress(platform, 'iPhone simulator launched')
-        updateSpinner('yellow', 'Compiling project')
+        updateSpinner('yellow', platform + ': Compiling project')
 
       } else if (s.includes('xctoolchain/usr/bin/clang -x ')) {
-        state.compiles += 1
-        updateSpinner('yellow', `Compiling project (${state.compiles} files compiled)`)
+        state[platform].compiles += 1
+        updateSpinner('yellow', platform + `: Compiling project (${state[platform].compiles} files compiled)`)
 
       } else if (s.includes('Start\\ Packager')) {
         updateSpinner('yellow', 'Starting Packager')
@@ -176,56 +198,75 @@ module.exports = async function (context) {
         updateSpinner('yellow', 'Building')
 
       } else if (s.includes('warning')) {
-        state.warnings += 1
+        state[platform].warnings += 1
 
       } else if (s.includes('** BUILD SUCCEEDED **')) {
-        const compiles = state.compiles <= 0 ? ' (nothing to recompile)' : ` (${state.compiles} ${state.existingBuild ? 're' : ''}compiled files)`
+        const compiles = state[platform].compiles <= 0 ? ' (nothing to recompile)' : ` (${state[platform].compiles} ${state[platform].existingBuild ? 're' : ''}compiled files)`
         progress(platform, `Project compiled successfully${compiles}`)
-        updateSpinner('green', 'Installing')
+        updateSpinner('green', platform + ': Installing')
 
       } else if (s.includes('** BUILD FAILED **')) {
-        failed(`Project failed to compile`)
-        updateSpinner('red', 'Shutting down')
-        state.status = 'error'
+        failed(platform + `: Project failed to compile`)
+        updateSpinner('red', platform + ': Shutting down')
+        state[platform].status = 'error'
 
       } else if (s.includes('Launching ')) {
         progress(platform, 'Installed app on simulator')
-        updateSpinner('green', 'Launching')
+        updateSpinner('green', platform + ': Launching')
       }
     }
   }
 
-  const androidResult = runAsync(`react-native run-android`, {
-    onProgress: onProgress('android')
-  })
-  const iOSResult = runAsync(`react-native run-ios`, {
-    onProgress: onProgress('ios')
-  })
-
-  await Promise.all([androidResult, iOSResult])
-
-  spinner.stop()
-
-  if (state.warnings > 0) {
-    print.info('')
-    print.info(gray(`  There were ${state.warnings} warnings. This usually doesn't mean anything. ¯\\_(ツ)_/¯`))
+  const onComplete = (platform) => (output) => {
+    if (state[platform].warnings > 0) {
+      print.info('')
+      print.info(gray(`  ${platform}: There were ${state.ios.warnings} warnings. This usually doesn't mean anything. ¯\\_(ツ)_/¯`))
+    }
+    progress(platform, `Launched in simulator`)
   }
 
-  if (state.status === 'error') {
+  const onError = (platform) => (output) => {
     failed('There were errors during the build')
     print.info('')
     print.info(`Here are the last few lines of the output, shortened for readability:`)
     print.info('')
-    print.info(gray(state.scrollback.join('\n')))
+    print.info(gray(state[platform].scrollback.join('\n')))
     print.info('')
-    print.info('To see full output, run `ignite run --debug` or `react-native run-' + state.platform + '`')
+    print.info('To see full output, run `ignite run --debug` or `react-native run-' + platform + '`')
     print.info('')
     print.info(`React Native app build failed after ${hrformat(process.hrtime(startTime))}s`)
-  } else {
-    progress('Both', `Launched in simulator`)
-    print.info('')
-    print.info(`React Native app built in ${hrformat(process.hrtime(startTime))}s`)
   }
+
+  let androidResult = null;
+  let iOSResult = null;
+
+  if (state.android.status === 'starting') {
+    if (!state.android.existingBuild) {
+      print.info(gray('This is the first Android build, so compiling will take considerably longer'))
+    }
+    androidResult = runAsync(`react-native run-android`, {
+      onProgress: onProgress('android'),
+      onComplete: onComplete('android'),
+      onError: onError('android')
+    })
+  }
+  if (state.ios.status === 'starting') {
+    if (!state.android.existingBuild) {
+      print.info(gray('This is the first iOS build, so compiling will take considerably longer'))
+    }
+    iOSResult = runAsync(`react-native run-ios`, {
+      onProgress: onProgress('ios'),
+      onComplete: onComplete('ios'),
+      onError: onError('ios')
+    })
+  }
+
+  await Promise.all([androidResult, iOSResult])
+
+  print.info('')
+  print.info(`Ignite run completed in ${hrformat(process.hrtime(startTime))}s`)
+
+  spinner.stop()
 }
 
 async function runAsync(commandLine, options) {
@@ -249,10 +290,12 @@ async function runAsync(commandLine, options) {
     })
     spawned.on('close', code => {
       out.code = code
+      if (options.onComplete) options.onComplete(out)
       resolve(out)
     })
     spawned.on('error', err => {
       out.error = err
+      if (options.onError) options.onError(out)
       resolve(out)
     })
   })
