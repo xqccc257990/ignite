@@ -9,14 +9,15 @@ async function completeLibraryTemplate (context, content) {
   var templateState = {
     content: content,
     workingContent: content,
-    currentSite: 1
+    currentSite: 1,
+    currentEntry: '',
   }
 
-  function placeCursor (content, currentEntryPoint) {
-    // return content
+  function getWorkingContent (content, currentEntryPoint, entry, showCursor=true) {
     var regex = new RegExp('\\$' + currentEntryPoint, "gm")
+    const cursor = showCursor ?  '▋' : ''
     if (content.search(regex)) {
-      return content.replace(regex, "▋")
+      return content.replace(regex, entry+cursor)
     }
   }
 
@@ -37,21 +38,28 @@ async function completeLibraryTemplate (context, content) {
     var nextSite = templateState.currentSite
     var content = templateState.content
     var workingContent = templateState.content
+    var entry = templateState.currentEntry
 
-    if ( name === 'CTRL_C' ) { terminate() ; }
-    if ( name === 'ENTER' ) {
+    if ( name === 'CTRL_C' ) {
+      terminate()
+    } else if ( name === 'ENTER' ) {
+      content = getWorkingContent(content, nextSite, entry, false)
+      entry = ''
       nextSite++
-    } 
+    } else {
+      entry = entry + name
+    }
 
-    workingContent = placeCursor(content, nextSite)
+    workingContent = getWorkingContent(content, nextSite, entry)
     if(!workingContent) { terminate() ; }
 
     drawTemplate(workingContent)
 
     return {
-      content: content,
-      workingContent: workingContent,
+      content,
+      workingContent,
       currentSite: nextSite,
+      currentEntry: entry,
     }
   }
 
@@ -60,7 +68,7 @@ async function completeLibraryTemplate (context, content) {
   drawTemplate(templateState.workingContent)
   
   term.grabInput( );
-  term.on( 'key' , async function( name , matches , data ) {
+  term.on( 'key' , async function( name , _matches , _data ) {
     const newTemplateState = await templateLoopIteration(templateState, name)
     Object.assign(templateState, newTemplateState)
   } ) ;
