@@ -32,7 +32,7 @@ async function completeLibraryTemplate (context, content) {
     screen.draw()
   }
 
-  async function templateLoopIteration(templateState, name = '') {
+  async function handleInput(templateState, name = '') {
     print.info(JSON.stringify(templateState))
 
     var nextSite = templateState.currentSite
@@ -63,13 +63,13 @@ async function completeLibraryTemplate (context, content) {
     }
   }
 
-  const newTemplateState = await templateLoopIteration(templateState)
+  const newTemplateState = await handleInput(templateState)
   Object.assign(templateState, newTemplateState)
   drawTemplate(templateState.workingContent)
   
   term.grabInput( );
   term.on( 'key' , async function( name , _matches , _data ) {
-    const newTemplateState = await templateLoopIteration(templateState, name)
+    const newTemplateState = await handleInput(templateState, name)
     Object.assign(templateState, newTemplateState)
   } ) ;
 }
