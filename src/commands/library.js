@@ -56,6 +56,7 @@ const gists = new Gists({
   token: process.env['IGNITE_GITHUB_TOKEN']
 });
 const getLibraryComponent = require('../lib/getLibraryComponent')
+const completeLibraryTemplate = require('../lib/completeLibraryTemplate')
 
 module.exports = async function (context) {
   const { parameters, filesystem, print, prompt, system } = context
@@ -68,30 +69,44 @@ module.exports = async function (context) {
       const selectedGist = await getLibraryComponent(context, filename)
 
       // have a new gist, now fill out the template
-      print.info('')
-      print.info(`Generating component`)
-      print.info('')
-      const genFile = await prompt.ask({
-        type: 'input',
-        name: 'filename',
-        message: 'Filename to generate:'
-      })
-
+      // print.info('')
+      // print.info(`Generating component`)
+      // print.info('')
+      const genFile = 'foo.js'
+      // const genFile = await prompt.ask({
+      //   type: 'input',
+      //   name: 'filename',
+      //   message: 'Filename to generate:'
+      // })
       const genFilename = genFile.filename
 
-      print.info('')
-      print.info(`Generating component into ${process.pwd() + '/' + genFilename}`)
-      print.info('')
+      // print.info('')
+      // print.info(`Generating component into ${process.pwd + '/' + genFilename}`)
+      // print.info('')
 
-      print.info(FAKE_TEMPLATE)
+      // print.info(FAKE_TEMPLATE)
+
       // this is where you fill out the template in terminal
       // it's replacing various things in the snippet, like
       //      export interface {{ NAME }}Props {
       // here you'd replace the {{ NAME }} interactively
 
       // then write to the filesystem
+      const gistContent = selectedGist.body.files['component.js'].content
 
-      // filesystem.write(genFilename, selectedGist.body.files['PLUGINS.md'].content)
+      completeLibraryTemplate(context, gistContent)
+
+      // var matches = re.exec(gistContent)
+      // print.info(gistContent)
+      // print.info(`matches ${JSON.stringify(matches)}`)
+
+      // var screen = new ScreenBuffer({dst: term, noFill: false})
+      // term(gistContent)
+      // term.moveTo(18,5)
+      // term.green("HERE")
+      // screen.draw()
+
+      // filesystem.write(genFilename, gistContent)
       break
     case 'publish':
       const spinner = print.spin()
