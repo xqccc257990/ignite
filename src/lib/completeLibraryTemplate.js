@@ -7,14 +7,12 @@ async function completeLibraryTemplate (context, content) {
   const { terminal: term, ScreenBuffer } = require( 'terminal-kit' )
   var screen = new ScreenBuffer({dst: term, noFill: false})
 
-  const findNextTemplateSpace = function(line) {
-
-  }
-
-  async function placeCursor (content, currentEntryPoint) {
-    var reCurrent = new RegExp('\\$' + currentEntryPoint, "gm")
-    if (content.search(reCurrent)) {
-      return content.replace(reCurrent, "▋")
+  function placeCursor (content, currentEntryPoint) {
+    // return content
+    var regex = new RegExp('\\$' + currentEntryPoint, "gm")
+    print.info(currentEntryPoint)
+    if (content.search(regex)) {
+      return content.replace(regex, "▋")
     }
   }
 
@@ -23,46 +21,43 @@ async function completeLibraryTemplate (context, content) {
     setTimeout( function() { process.exit() } , 100 ) ;
   }
 
-  function advanceSite(nString) {
-    var nPlusOne = parseInt(nString) + 1
-    return nPlusOne.toString()
-  }
-
-  function templateLoopIteration(data, name = null) {
-    // const { content, currentSite } = data
-    // var nextSite = currentSite
-    // print.info(term)
-    var nextSite
+  async function templateLoopIteration(templateState, name = '') {
+    var nextSite = templateState.currentSite
+    var content = templateState.content
+    print.info(JSON.stringify(templateState))
+    var workingContent = templateState.content
 
     if ( name === 'CTRL_C' ) { terminate() ; }
     if ( name === 'ENTER' ) {
-      nextSite = advanceSite(data.currentSite)
-    }
+      nextSite++
+    } 
 
-    // term.clear()
-    // var contentWithCursor = await placeCursor(content, nextSite || data.currentSite)
-    // term(content)
-    // screen.draw()
+    workingContent = placeCursor(content, nextSite)
+    if(!workingContent) { terminate() ; }
+
+    term.clear()
+    term(workingContent)
+    screen.draw()
 
     return {
-      content,
-      contentWithCursor: content,
-      currentSite: nextSite || data.currentSite,
+      content: content,
+      workingContent: workingContent,
+      currentSite: nextSite,
     }
   }
 
-
-  var data = {
+  var templateState = {
     content: content,
-    currentSite: "1"
+    workingContent: content,
+    currentSite: 1
   }
 
   term.grabInput( ) ;
-  data = templateLoopIteration(data)
+  Object.assign(templateState, templateLoopIteration(templateState, ''))
 
-  term.on( 'key' , function( name , matches , _data ) {
-    data = templateLoopIteration(data, name)
-    print.info(JSON.stringify(data))
+  term.on( 'key' , function( name , matches , data ) {
+    Object.assign(templateState, templateLoopIteration(templateState, name))
+    // print.info(JSON.stringify(templateState))
   } ) ;
 
 
