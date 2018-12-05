@@ -69,22 +69,21 @@ module.exports = async function (context) {
       const selectedGist = await getLibraryComponent(context, filename)
 
       // have a new gist, now fill out the template
-      // print.info('')
-      // print.info(`Generating component`)
-      // print.info('')
-      const genFile = 'foo.js'
-      // const genFile = await prompt.ask({
-      //   type: 'input',
-      //   name: 'filename',
-      //   message: 'Filename to generate:'
-      // })
+      print.info('')
+      print.info(`Generating component`)
+      print.info('')
+
+      const genFile = await prompt.ask({
+        type: 'input',
+        name: 'filename',
+        message: 'Filename to generate:'
+      })
       const genFilename = genFile.filename
+      print.info(genFilename)
 
-      // print.info('')
-      // print.info(`Generating component into ${process.pwd + '/' + genFilename}`)
-      // print.info('')
-
-      // print.info(FAKE_TEMPLATE)
+      print.info('')
+      print.info(`Generating component into ${process.pwd + '/' + genFilename}`)
+      print.info('')
 
       // this is where you fill out the template in terminal
       // it's replacing various things in the snippet, like
@@ -95,10 +94,9 @@ module.exports = async function (context) {
       const gistContent = selectedGist.body.files['component.js'].content
 
       completeLibraryTemplate(context, gistContent, templateState => {
-        print.info(JSON.stringify(templateState))
+        filesystem.write(genFilename, templateState.content)
       })
 
-      // filesystem.write(genFile, completedTemplate.content)
       break
     case 'publish':
       const spinner = print.spin()
