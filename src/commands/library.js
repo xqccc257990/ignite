@@ -50,7 +50,6 @@ export function <%= props.pascalName %>(props: <%= props.pascalName %>Props) {
 }
 `
 
-const { terminal: term, ScreenBuffer } = require( 'terminal-kit' )
 const Gists = require('gists');
 const gists = new Gists({
   token: process.env['IGNITE_GITHUB_TOKEN']
@@ -61,12 +60,12 @@ const completeLibraryTemplate = require('../lib/completeLibraryTemplate')
 module.exports = async function (context) {
   const { parameters, filesystem, print, prompt, system } = context
 
-  const filename = parameters.third
+  const searchTerm = parameters.third
 
   switch (parameters.second.toLowerCase()) {
     case 'search':
       // go out and get the Infinite Red component library
-      const selectedGist = await getLibraryComponent(context, filename)
+      const selectedGist = await getLibraryComponent(context, searchTerm)
 
       // have a new gist, now fill out the template
       print.info('')
@@ -232,10 +231,10 @@ module.exports = async function (context) {
 
       break
     case 'update':
-      console.log('updating' + filename)
+      console.log('updating' + searchTerm)
       break
     case 'view':
-      console.log('viewing' + filename)
+      console.log('viewing' + searchTerm)
       break
   }
 

@@ -7,7 +7,7 @@ const gists = new Gists({
   token: process.env['IGNITE_GITHUB_TOKEN']
 });
 
-async function getLibraryComponent (context, filename) {
+async function getLibraryComponent (context, searchTerm) {
   const { print, prompt } = context
 
   let res
@@ -27,13 +27,13 @@ async function getLibraryComponent (context, filename) {
   const components = JSON.parse(res.body.files['library-index.json'].content).components
 
   // search for a component
-  const searchResults = components.filter(comp => comp.name.includes(filename))
+  const searchResults = components.filter(comp => comp.name.includes(searchTerm))
 
   // console.dir(searchResults)
   const selection = await prompt.ask({
     type: 'list',
     name: 'component',
-    message: `Components matching ${filename}:`,
+    message: `Components matching ${searchTerm}:`,
     choices: searchResults.map(r => r.name + " - " + r.description)
   })
 
