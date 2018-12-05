@@ -2,7 +2,7 @@
  * Facilitates completing a library template
  */
 
-async function completeLibraryTemplate (context, content) {
+async function completeLibraryTemplate (context, content, onComplete) {
   const { print } = context
   const { terminal: term, ScreenBuffer } = require( 'terminal-kit' )
   var screen = new ScreenBuffer({dst: term, noFill: false})
@@ -55,8 +55,6 @@ async function completeLibraryTemplate (context, content) {
 
     workingContent = getWorkingContent(content, nextSite, entry)
 
-    if(!workingContent) { terminate() ; }
-
     drawTemplate(workingContent)
 
     return {
@@ -77,7 +75,8 @@ async function completeLibraryTemplate (context, content) {
     
     if (newTemplateState.finished) {
       term.clear()
-      return newTemplateState
+      terminate()
+      onComplete(newTemplateState)
     }
 
     Object.assign(templateState, newTemplateState)

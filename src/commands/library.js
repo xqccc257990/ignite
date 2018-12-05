@@ -94,19 +94,11 @@ module.exports = async function (context) {
       // then write to the filesystem
       const gistContent = selectedGist.body.files['component.js'].content
 
-      completeLibraryTemplate(context, gistContent)
+      completeLibraryTemplate(context, gistContent, templateState => {
+        print.info(JSON.stringify(templateState))
+      })
 
-      // var matches = re.exec(gistContent)
-      // print.info(gistContent)
-      // print.info(`matches ${JSON.stringify(matches)}`)
-
-      // var screen = new ScreenBuffer({dst: term, noFill: false})
-      // term(gistContent)
-      // term.moveTo(18,5)
-      // term.green("HERE")
-      // screen.draw()
-
-      // filesystem.write(genFilename, gistContent)
+      // filesystem.write(genFile, completedTemplate.content)
       break
     case 'publish':
       const spinner = print.spin()
