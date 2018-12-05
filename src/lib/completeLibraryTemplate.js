@@ -16,8 +16,11 @@ async function completeLibraryTemplate (context, content) {
   function getWorkingContent (content, currentEntryPoint, entry, showCursor=true) {
     var regex = new RegExp('\\$' + currentEntryPoint, "gm")
     const cursor = showCursor ?  '▋' : ''
-    if (content.search(regex)) {
+
+    if (content.search(regex) > 0) {
       return content.replace(regex, entry+cursor)
+    } else {
+      return false
     }
   }
 
@@ -51,13 +54,15 @@ async function completeLibraryTemplate (context, content) {
     }
 
     workingContent = getWorkingContent(content, nextSite, entry)
+
     if(!workingContent) { terminate() ; }
 
     drawTemplate(workingContent)
 
     return {
       content,
-      workingContent,
+      workingContent: workingContent,
+      finished: !workingContent,
       currentSite: nextSite,
       currentEntry: entry,
     }
@@ -65,11 +70,16 @@ async function completeLibraryTemplate (context, content) {
 
   const newTemplateState = await handleInput(templateState)
   Object.assign(templateState, newTemplateState)
-  drawTemplate(templateState.workingContent)
   
   term.grabInput( );
   term.on( 'key' , async function( name , _matches , _data ) {
     const newTemplateState = await handleInput(templateState, name)
+    
+    if (newTemplateState.finished) {
+      term.clear()
+      return newTemplateState
+    }
+
     Object.assign(templateState, newTemplateState)
   } ) ;
 }
