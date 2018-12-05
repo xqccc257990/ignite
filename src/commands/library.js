@@ -64,6 +64,12 @@ module.exports = async function (context) {
 
   switch (parameters.second.toLowerCase()) {
     case 'search':
+      if (!searchTerm) {
+        print.error('')
+        print.error(`You must enter a search term (e.g. 'datepicker')`)
+        print.error('')
+      }
+
       // go out and get the Infinite Red component library
       const selectedGist = await getLibraryComponent(context, searchTerm)
 
