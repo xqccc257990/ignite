@@ -90,11 +90,6 @@ module.exports = async function (context) {
       print.info(`Generating component into ${process.pwd + '/' + genFilename}`)
       print.info('')
 
-      // this is where you fill out the template in terminal
-      // it's replacing various things in the snippet, like
-      //      export interface {{ NAME }}Props {
-      // here you'd replace the {{ NAME }} interactively
-
       // then write to the filesystem
       const gistContent = selectedGist.body.files['component.js'].content
 
