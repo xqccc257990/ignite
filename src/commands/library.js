@@ -12,43 +12,6 @@
  * defaults to infinitered
  */
 
-const LIBRARY_INDEX_URL = `https://raw.githubusercontent.com/{parameters.options.github || 'infinitered'}/ignite-library/master/library.json`
-
-const FAKE_TEMPLATE = `
-import * as React from "react"
-import { View, ViewStyle } from "react-native"
-
-export interface {{ NAME }}Props {
-  /**
-   * Text which is looked up via i18n.
-   */
-  tx?: string
-
-  text?: string
-
-  /**
-   * An optional style override useful for padding & margin.
-   */
-  style?: ViewStyle
-}
-
-/**
- * Stateless functional component for your needs
- *
- * Component description here for TypeScript tips.
- */
-export function <%= props.pascalName %>(props: <%= props.pascalName %>Props) {
-  // grab the props
-  const { tx, text, style, ...rest } = props
-  const textStyle = { }
-
-  return (
-    <View style={style} {...rest}>
-      <Text tx={tx} text={text} style={textStyle} />
-    </View>
-  )
-}
-`
 
 const Gists = require('gists');
 const gists = new Gists({
