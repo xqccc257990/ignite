@@ -183,11 +183,18 @@ module.exports = async function (context) {
       spinner.text = 'We are go for launch!'
       spinner.succeed()
 
+      const descriptionResponse = await prompt.ask({
+        type: 'input',
+        name: 'description',
+        message: 'Enter a description for your component'
+      })
+      const description = descriptionResponse.description
+
       // Create the component gist
       spinner.text = 'Adding component gist'
       try {
         const res = await gists.create({
-          description: "Just testing this",
+          description: description,
           public: true,
           files: {
             [componentName]: {
@@ -201,7 +208,7 @@ module.exports = async function (context) {
         // Add component to library index, stage, commit, and push
         componentIndex.push({
           name: componentName,
-          description: 'A snazzy component',
+          description: description,
           gist: gistId,
           tags: '',
         })
