@@ -222,7 +222,7 @@ module.exports = async function (context) {
       
       filesystem.write(`${igniteLibraryDir}/index.json`, newFileBody)
 
-      process.chdir('ignite-library')
+      process.chdir(igniteLibraryDir)
       
       try {
         // NOTE not actually pushing up yet; just testing
