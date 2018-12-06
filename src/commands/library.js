@@ -19,6 +19,7 @@ const gists = new Gists({
 });
 const getLibraryComponent = require('../lib/getLibraryComponent')
 const completeLibraryTemplate = require('../lib/completeLibraryTemplate')
+const createIgniteLibrary = require('../lib/createIgniteLibrary')
 
 module.exports = async function (context) {
   const { parameters, filesystem, print, prompt, system } = context
@@ -62,32 +63,11 @@ module.exports = async function (context) {
 
       break
     case 'publish':
-      const spinner = print.spin()
-      
-      spinner.start()
-
-      // Clone library if we haven't yet
-      spinner.text = 'Checking for library index...'
-
       const igniteLibraryDir = `${__dirname}/../../ignite-library`
+      const spinner = print.spin()
 
-      const repoExists = await filesystem.exists(igniteLibraryDir)
-
-      if (repoExists) {
-        spinner.succeed()
-
-        spinner.text = 'Component library found!'
-
-      } else {
-        spinner.succeed()
-
-        spinner.text = 'Component library not found, cloning...'
-        
-        // Clone the library
-        await system.run(`git clone git@github.com:infinitered/ignite-library.git ${igniteLibraryDir}`)
-
-        spinner.succeed()
-      }
+      await createIgniteLibrary(context, spinner, igniteLibraryDir)
+      
       
       // Ask for component name
       const answer = await prompt.ask({
