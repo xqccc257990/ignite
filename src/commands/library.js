@@ -168,10 +168,25 @@ module.exports = async function (context) {
       
       try {
         // NOTE not actually pushing up yet; just testing
-        await system.run(`git add index.json && git commit -m "Added component ${componentName}"`)
+        await system.run(`git add library-index.json && git commit -m "Added component ${componentName}"`)
+
+        spinner.text = 'Updating library index'
+
+        gists.edit(LIBRARY_INDEX_GIST, {
+          description: 'Sample Ignite Library Index',
+          files: {
+            'library-index.json': {
+              content: newFileBody,
+              filename: 'library-index.json',
+            }
+          }
+        })
       } catch (error) {
+        spinner.fail()
         console.log('error', error)
       }
+
+      spinner.succeed()
 
       process.chdir('..')
 
