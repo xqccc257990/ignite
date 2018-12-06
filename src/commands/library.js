@@ -46,15 +46,16 @@ module.exports = async function (context) {
         name: 'filename',
         message: 'Filename to generate:'
       })
-      const genFilename = genFile.filename
-      print.info(genFilename)
+      const genFilename = genFile.filename + '.tsx'
 
       print.info('')
       print.info(`Generating component into ${process.pwd + '/' + genFilename}`)
       print.info('')
 
       // then write to the filesystem
-      const gistContent = selectedGist.body.files['component.js'].content
+      // TODO genFilename should be name of selected file
+      const componentFilename = Object.keys(selectedGist.body.files)[0]
+      const gistContent = selectedGist.body.files[componentFilename].content
 
       completeLibraryTemplate(context, gistContent, templateState => {
         filesystem.write(genFilename, templateState.content)
@@ -75,9 +76,9 @@ module.exports = async function (context) {
         message: 'What is your component\'s name?'
       })
 
-      const componentName = answer.name
+      const componentName = answer.name + '.tsx'
 
-      if (!componentName) {
+      if (!componentFilename) {
         spinner.text = 'Component name required'
         spinner.fail()
         process.exit(1)
@@ -90,7 +91,7 @@ module.exports = async function (context) {
 
       // Check for existing component with same name + description combination
       spinner.text = 'Checking for conflicting component'
-      const existingComponent = componentIndex.find( c => c.name === componentName )
+      const existingComponent = componentIndex.find( c => c.name === componentFilename )
       
       if (existingComponent) {
         spinner.fail()
@@ -106,7 +107,7 @@ module.exports = async function (context) {
       // Ensure that component file exists
       // (file with name matching)
       spinner.text = 'Finding your component'
-      const componentPath = `${process.cwd()}/${componentName}.tsx`
+      const componentPath = `${process.cwd()}/${componentFilename}`
 
       const componentFileExists = filesystem.exists(componentPath)
       
@@ -139,8 +140,8 @@ module.exports = async function (context) {
           description: description,
           public: true,
           files: {
-            [componentName]: {
-              content: filesystem.read(componentPath)
+            [componentFilename]: {
+              content: filesystem.read(componentPath),
             }
           }
         })
@@ -149,7 +150,7 @@ module.exports = async function (context) {
 
         // Add component to library index, stage, commit, and push
         componentIndex.push({
-          name: componentName,
+          name: componentFilename,
           description: description,
           gist: gistId,
           tags: '',
@@ -168,7 +169,7 @@ module.exports = async function (context) {
       
       try {
         // NOTE not actually pushing up yet; just testing
-        await system.run(`git add library-index.json && git commit -m "Added component ${componentName}"`)
+        await system.run(`git add library-index.json && git commit -m "Added component ${componentFilename}"`)
 
         spinner.text = 'Updating library index'
 
