@@ -1,11 +1,11 @@
 /**
  * Retrieves a Library component from GitHub Gists
  */
-const LIBRARY_INDEX_GIST = '4fe0dfd70e7556f62cccd24c96a06be2'//'fd8513a906c8da31984c68064f0498e6'
-const Gists = require('gists');
+const LIBRARY_INDEX_GIST = process.env['LIBRARY_INDEX_GIST'] || '4fe0dfd70e7556f62cccd24c96a06be2'
+const Gists = require('gists')
 const gists = new Gists({
   token: process.env['IGNITE_GITHUB_TOKEN']
-});
+})
 
 async function getLibraryComponent (context, searchTerm) {
   const { print, prompt } = context
@@ -22,7 +22,6 @@ async function getLibraryComponent (context, searchTerm) {
     print.info(`export IGNITE_GITHUB_TOKEN='tokenhere'`)
     process.exit(e.code)
   }
-
   // parse out the components
   const components = JSON.parse(res.body.files['library-index.json'].content).components
 
