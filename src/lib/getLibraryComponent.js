@@ -15,7 +15,7 @@ async function getLibraryComponent (context, searchTerm) {
     res = await gists.get(LIBRARY_INDEX_GIST)
   } catch (e) {
     // if not found, exit gracefully 
-    print.info(`Can't find the Ignite library index at (https://gist.github.com/jamonholmgren/${LIBRARY_INDEX_GIST})`)
+    print.info(`Can't find the Ignite library index`)
     print.info('')
     print.info(`You may have set your env variable incorrectly (Not really, this is COMING SOON) or don't have a Personal Access Token set (more likely!)`)
     print.info(`Go to https://github.com/settings/tokens to generate one and then run this in terminal:`)
