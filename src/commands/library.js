@@ -11,7 +11,7 @@
  * 
  * defaults to infinitered
  */
-
+const LIBRARY_INDEX_GIST = process.env['LIBRARY_INDEX_GIST'] || '4fe0dfd70e7556f62cccd24c96a06be2'
 
 const Gists = require('gists');
 const gists = new Gists({
@@ -86,7 +86,7 @@ module.exports = async function (context) {
 
       // Get the library index
       spinner.text = 'Getting component index'
-      const componentIndex = JSON.parse(filesystem.read(`${igniteLibraryDir}/index.json`)).components
+      const componentIndex = JSON.parse(filesystem.read(`${igniteLibraryDir}/library-index.json`)).components
       spinner.succeed()
 
       // Check for existing component with same name + description combination
@@ -163,7 +163,7 @@ module.exports = async function (context) {
 
       const newFileBody = JSON.stringify({components: componentIndex})
       
-      filesystem.write(`${igniteLibraryDir}/index.json`, newFileBody)
+      filesystem.write(`${igniteLibraryDir}/library-index.json`, newFileBody)
 
       process.chdir(igniteLibraryDir)
       
