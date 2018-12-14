@@ -2,7 +2,7 @@
  * Retrieves a Library component from GitHub Gists
  */
 async function getLibraryComponent (context, spinner, igniteLibraryDir) {
-  const { filesystem } = context
+  const { filesystem, system } = context
   const repoExists = await filesystem.exists(igniteLibraryDir)
 
   spinner.start()
@@ -22,6 +22,7 @@ async function getLibraryComponent (context, spinner, igniteLibraryDir) {
     spinner.text = 'Component library not found, cloning...'
     
     // Clone the library
+    filesystem.dir(`${__dirname}/../../ignite-library`)
     await system.run(`git clone git@github.com:infinitered/ignite-library.git ${igniteLibraryDir}`)
 
     spinner.succeed()
