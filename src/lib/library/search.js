@@ -11,12 +11,8 @@ module.exports = async function(context) {
   }
 
   // go out and get the Infinite Red component library
-  const filter = selection => {
-    return result => {
-      return (result.name + " - " + result.description) === selection.component
-    }
-  }
-  const selectedGist = await getLibraryComponent(context, searchTerm, filter)
+  const searchFilter = component => component.name.includes(searchTerm)
+  const selectedGist = await getLibraryComponent(context, searchTerm, searchFilter)
 
   // have a new gist, now fill out the template
   print.info('')
