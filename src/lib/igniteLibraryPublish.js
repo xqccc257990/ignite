@@ -31,6 +31,23 @@ module.exports = async function(context, gists) {
     process.exit(1)
   }
 
+  // Ensure that component file exists
+  // (file with name matching)
+  spinner.text = `Finding your component ${templateFilename}`
+  const componentPath = `${process.cwd()}/${templateFilename}`
+
+  const componentFileExists = filesystem.exists(componentPath)
+  
+  // exit gracefully if not
+  if (!componentFileExists) {
+    spinner.fail()
+    spinner.text = 'Input file doesn\'t exist, bailing out...\n(Note: must run this command from same directory as component)'
+    spinner.fail()
+    process.exit(1)
+  }
+
+  spinner.succeed()
+
   const publishNameAns = await prompt.ask({
     type: 'input',
     name: 'name',
@@ -56,23 +73,6 @@ module.exports = async function(context, gists) {
 
   spinner.succeed()
   spinner.text = 'No conflict found!'
-  spinner.succeed()
-
-  // Ensure that component file exists
-  // (file with name matching)
-  spinner.text = `Finding your component ${templateFilename}`
-  const componentPath = `${process.cwd()}/${templateFilename}`
-
-  const componentFileExists = filesystem.exists(componentPath)
-  
-  // exit gracefully if not
-  if (!componentFileExists) {
-    spinner.fail()
-    spinner.text = 'Input file doesn\'t exist, bailing out...'
-    spinner.fail()
-    process.exit(1)
-  }
-
   spinner.succeed()
 
   // Conditions are clear! We can add the component
