@@ -31,7 +31,7 @@ module.exports = async function (context) {
       await igniteLibraryPublish(context, gists)
       break
     case 'update':
-      console.log('updating' + searchTerm)
+      await igniteLibraryUpdate(context)
       break
     case 'view':
       await igniteLibraryView(context)
