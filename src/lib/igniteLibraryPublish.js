@@ -37,7 +37,7 @@ module.exports = async function(context, gists) {
 
   // Check for existing component with same name + description combination
   spinner.text = 'Checking for conflicting component'
-  const existingComponent = componentIndex.find( c => c.name === templateFilename )
+  const existingComponent = componentIndex.find( c => c.name === newComponentName )
   
   if (existingComponent) {
     spinner.fail()
@@ -52,7 +52,7 @@ module.exports = async function(context, gists) {
 
   // Ensure that component file exists
   // (file with name matching)
-  spinner.text = 'Finding your component'
+  spinner.text = `Finding your component ${templateFilename}`
   const componentPath = `${process.cwd()}/${templateFilename}`
 
   const componentFileExists = filesystem.exists(componentPath)
@@ -86,7 +86,7 @@ module.exports = async function(context, gists) {
       description: description,
       public: true,
       files: {
-        [templateFilename]: {
+        [newComponentName]: {
           content: filesystem.read(componentPath),
         }
       }
@@ -96,7 +96,7 @@ module.exports = async function(context, gists) {
 
     // Add component to library index, stage, commit, and push
     componentIndex.push({
-      name: templateFilename,
+      name: newComponentName,
       description: description,
       gist: gistId,
       tags: '',
@@ -115,7 +115,7 @@ module.exports = async function(context, gists) {
   
   try {
     // NOTE not actually pushing up yet; just testing
-    await system.run(`git add library-index.json && git commit -m "Added component ${templateFilename}"`)
+    await system.run(`git add library-index.json && git commit -m "Added component ${newComponentName}"`)
 
     spinner.text = 'Updating library index'
 
