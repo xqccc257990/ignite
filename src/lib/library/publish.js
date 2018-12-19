@@ -19,14 +19,14 @@ module.exports = async function(context, gists) {
     templateFilenameAns.location &&
     templateFilenameAns.location.match(/^(\w+)(?:\.tsx)?$/)
   if (!componentNameMatch) {
-    spinner.text = 'Component name must have the form `name[.tsx]`'
+    spinner.text = 'Component filename must have the form `name[.tsx]`'
     spinner.fail()
     process.exit(1)
   }
   const templateFilename = `${componentNameMatch[1]}.tsx`
 
   if (!templateFilename) {
-    spinner.text = 'Component name required'
+    spinner.text = 'Component filename required'
     spinner.fail()
     process.exit(1)
   }
