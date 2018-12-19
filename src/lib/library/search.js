@@ -41,5 +41,4 @@ module.exports = async function(context) {
   completeLibraryTemplate(context, gistContent, templateState => {
     filesystem.write(genFilename, templateState.content)
   })
-
 }
