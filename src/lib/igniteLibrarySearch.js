@@ -21,9 +21,13 @@ module.exports = async function(context, _gists) {
   const genFile = await prompt.ask({
     type: 'input',
     name: 'filename',
-    message: 'Filename to generate:'
+    message: 'Filename to generate (.tsx optional):'
   })
-  const genFilename = genFile.filename + '.tsx'
+  const genFileMatch =
+    genFile.filename &&
+    genFile.filename.match(/^(\w+)(?:\.tsx)?$/)
+
+  const genFilename = `${genFileMatch[1]}.tsx`
 
   print.info('')
   print.info(`Generating component into ${process.pwd + '/' + genFilename}`)
