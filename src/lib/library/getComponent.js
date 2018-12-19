@@ -2,7 +2,7 @@
  * Retrieves a Library component from GitHub Gists
  */
 
-async function getLibraryComponent (context, searchTerm) {
+async function getLibraryComponent (context, searchTerm, filter) {
   const LIBRARY_INDEX_GIST = process.env['LIBRARY_INDEX_GIST'] || '4fe0dfd70e7556f62cccd24c96a06be2'
   const Gists = require('gists')
   const gists = new Gists({
@@ -41,7 +41,7 @@ async function getLibraryComponent (context, searchTerm) {
     choices: searchResults.map(r => r.name + " - " + r.description)
   })
 
-  const selectedResult = searchResults.find(r => (r.name + " - " + r.description) === selection.component)
+  const selectedResult = searchResults.find(filter(selection))
 
   const selectedGist = await gists.get(selectedResult.gist)
 

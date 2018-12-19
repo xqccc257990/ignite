@@ -151,7 +151,6 @@ module.exports = async function(context, gists) {
     spinner.text = 'Updating owned component index...'
     const ownedIndex = JSON.parse(filesystem.read(`${igniteLibraryDir}/owned-components.json`)).ownedComponents
     ownedIndex.push(componentGistId)
-    console.log(ownedIndex)
 
     const newOwnedIndexBody = JSON.stringify({ownedComponents: ownedIndex})
     filesystem.write(`${igniteLibraryDir}/owned-components.json`, newOwnedIndexBody)
