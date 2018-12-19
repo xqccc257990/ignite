@@ -15,7 +15,7 @@ async function completeLibraryTemplate (context, content, onComplete) {
 
   function getWorkingContent (content, currentEntryPoint, entry, showCursor=true) {
     var regex = new RegExp('\\$' + currentEntryPoint, "gm")
-    const cursor = showCursor ?  '▋' : ''
+    const cursor = showCursor ?  '█' : ''
 
     if (content.search(regex) > 0) {
       return content.replace(regex, entry+cursor)
