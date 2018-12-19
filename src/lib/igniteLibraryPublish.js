@@ -9,13 +9,13 @@ module.exports = async function(context, gists) {
   
   
   // Ask for component name
-  const answer = await prompt.ask({
+  const templateFilenameAns = await prompt.ask({
     type: 'input',
     name: 'location',
     message: 'Where is your component located (relative to cwd)?'
   })
 
-  const templateFilename = answer.location + '.tsx'
+  const templateFilename = templateFilenameAns.location + '.tsx'
 
   if (!templateFilename) {
     spinner.text = 'Component name required'
@@ -23,12 +23,12 @@ module.exports = async function(context, gists) {
     process.exit(1)
   }
 
-  const newComponentNameAnswer = await prompt.ask({
+  const publishNameAns = await prompt.ask({
     type: 'input',
     name: 'name',
     message: 'What is your component\'s name?'
   })
-  const newComponentName = newComponentNameAnswer.name
+  const publishName = publishNameAns.name
 
   // Get the library index
   spinner.text = 'Getting component index'
@@ -37,7 +37,7 @@ module.exports = async function(context, gists) {
 
   // Check for existing component with same name + description combination
   spinner.text = 'Checking for conflicting component'
-  const existingComponent = componentIndex.find( c => c.name === newComponentName )
+  const existingComponent = componentIndex.find( c => c.name === publishName )
   
   if (existingComponent) {
     spinner.fail()
@@ -86,7 +86,7 @@ module.exports = async function(context, gists) {
       description: description,
       public: true,
       files: {
-        [newComponentName]: {
+        [publishName]: {
           content: filesystem.read(componentPath),
         }
       }
@@ -96,7 +96,7 @@ module.exports = async function(context, gists) {
 
     // Add component to library index, stage, commit, and push
     componentIndex.push({
-      name: newComponentName,
+      name: publishName,
       description: description,
       gist: gistId,
       tags: '',
@@ -115,7 +115,7 @@ module.exports = async function(context, gists) {
   
   try {
     // NOTE not actually pushing up yet; just testing
-    await system.run(`git add library-index.json && git commit -m "Added component ${newComponentName}"`)
+    await system.run(`git add library-index.json && git commit -m "Added component ${publishName}"`)
 
     spinner.text = 'Updating library index'
 
