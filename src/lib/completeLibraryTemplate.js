@@ -43,14 +43,25 @@ async function completeLibraryTemplate (context, content, onComplete) {
     var workingContent = templateState.content
     var entry = templateState.currentEntry
 
-    if ( name === 'CTRL_C' ) {
-      terminate()
-    } else if ( name === 'ENTER' ) {
-      content = getWorkingContent(content, nextSite, entry, false)
-      entry = ''
-      nextSite++
-    } else {
-      entry = entry + name
+    switch (name) {
+      case 'CTRL_C':
+        terminate()
+        break;
+      case 'ENTER':
+        content = getWorkingContent(content, nextSite, entry, false)
+        entry = ''
+        nextSite++
+        break;
+      case 'TAB':
+        content = getWorkingContent(content, nextSite, entry, false)
+        entry = ''
+        nextSite++
+      case 'BACKSPACE':
+        entry = entry.slice(0,-1)
+        break;
+      default:
+        entry = entry + name
+        break;
     }
 
     workingContent = getWorkingContent(content, nextSite, entry)
