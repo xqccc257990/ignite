@@ -160,7 +160,7 @@ module.exports = async function(context, gists) {
     spinner.fail()
     spinner.text = `
       There was a problem recording ownership of your component.
-      Please manually add the componentGistId (${componentGistId}) to ${igniteLibraryDir}/owned-components.json
+      Please manually add your component's gist id (${componentGistId}) to ${igniteLibraryDir}/owned-components.json
       so that you can update the component later.
     `
     spinner.fail()
