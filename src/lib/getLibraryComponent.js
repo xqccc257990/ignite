@@ -28,6 +28,11 @@ async function getLibraryComponent (context, searchTerm) {
   // search for a component
   const searchResults = components.filter(comp => comp.name.includes(searchTerm))
 
+  if (!searchResults.length) {
+    print.error('No matching components found!')
+    process.exit(1)
+  }
+
   // console.dir(searchResults)
   const selection = await prompt.ask({
     type: 'list',
