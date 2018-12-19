@@ -17,6 +17,7 @@ const gists = new Gists({
 });
 const igniteLibrarySearch = require('../lib/library/search')
 const igniteLibraryPublish = require('../lib/library/publish')
+const igniteLibraryView = require('../lib/library/view')
 
 module.exports = async function (context) {
   const { parameters } = context
@@ -32,7 +33,7 @@ module.exports = async function (context) {
       console.log('updating' + searchTerm)
       break
     case 'view':
-      console.log('viewing' + searchTerm)
+      await igniteLibraryView(context)
       break
   }
 
