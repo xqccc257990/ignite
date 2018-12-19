@@ -22,7 +22,7 @@ async function getLibraryComponent (context, spinner, igniteLibraryDir) {
     spinner.text = 'Component library not found, cloning...'
     
     // Clone the library
-    filesystem.dir(`${__dirname}/../../ignite-library`)
+    filesystem.dir(`${__dirname}/../../../ignite-library`)
     await system.run(`git clone git@github.com:infinitered/ignite-library.git ${igniteLibraryDir}`)
 
     spinner.succeed()

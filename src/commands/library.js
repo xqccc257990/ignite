@@ -18,6 +18,7 @@ const gists = new Gists({
 const igniteLibrarySearch = require('../lib/library/search')
 const igniteLibraryPublish = require('../lib/library/publish')
 const igniteLibraryView = require('../lib/library/view')
+const igniteLibraryUpdate = require('../lib/library/update')
 
 module.exports = async function (context) {
   const { parameters } = context

@@ -2,7 +2,7 @@ module.exports = async function(context, gists) {
   const LIBRARY_INDEX_GIST = process.env['LIBRARY_INDEX_GIST'] || '4fe0dfd70e7556f62cccd24c96a06be2'
   const { filesystem, print, prompt, system } = context
   const createIgniteLibrary = require('./createIgniteLibrary')
-  const igniteLibraryDir = `${__dirname}/../../ignite-library`
+  const igniteLibraryDir = `${__dirname}/../../../ignite-library`
   const spinner = print.spin()
 
   await createIgniteLibrary(context, spinner, igniteLibraryDir)
