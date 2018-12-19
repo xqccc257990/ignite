@@ -4,7 +4,7 @@ module.exports = async function(context) {
   const gists = new Gists({
     token: process.env['IGNITE_GITHUB_TOKEN']
   })
-  const getLibraryComponent = require('../getLibraryComponent')
+  const getLibraryComponent = require('./getComponent')
   const { parameters, filesystem, print, prompt } = context
   const searchTerm = parameters.third
 

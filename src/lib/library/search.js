@@ -1,5 +1,5 @@
 module.exports = async function(context) {
-  const getLibraryComponent = require('../getLibraryComponent')
+  const getLibraryComponent = require('./getComponent')
   const completeLibraryTemplate = require('../completeLibraryTemplate')
   
   const { parameters, filesystem, print, prompt } = context
