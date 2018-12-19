@@ -15,15 +15,15 @@ const Gists = require('gists');
 const gists = new Gists({
   token: process.env['IGNITE_GITHUB_TOKEN']
 });
-const igniteLibrarySearch = require('../lib/igniteLibrarySearch')
-const igniteLibraryPublish = require('../lib/igniteLibraryPublish')
+const igniteLibrarySearch = require('../lib/library/search')
+const igniteLibraryPublish = require('../lib/library/publish')
 
 module.exports = async function (context) {
   const { parameters } = context
 
   switch (parameters.second.toLowerCase()) {
     case 'search':
-      await igniteLibrarySearch(context, gists)
+      await igniteLibrarySearch(context)
       break
     case 'publish':
       await igniteLibraryPublish(context, gists)

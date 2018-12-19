@@ -1,6 +1,6 @@
-module.exports = async function(context, _gists) {
-  const getLibraryComponent = require('../lib/getLibraryComponent')
-  const completeLibraryTemplate = require('../lib/completeLibraryTemplate')
+module.exports = async function(context) {
+  const getLibraryComponent = require('../getLibraryComponent')
+  const completeLibraryTemplate = require('../completeLibraryTemplate')
   
   const { parameters, filesystem, print, prompt } = context
   const searchTerm = parameters.third
