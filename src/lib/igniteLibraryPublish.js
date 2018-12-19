@@ -12,10 +12,18 @@ module.exports = async function(context, gists) {
   const templateFilenameAns = await prompt.ask({
     type: 'input',
     name: 'location',
-    message: 'Where is your component located (relative to cwd)?'
+    message: 'What is the filename of your component? (.tsx optional)'
   })
 
-  const templateFilename = templateFilenameAns.location + '.tsx'
+  const componentNameMatch =
+    templateFilenameAns.location &&
+    templateFilenameAns.location.match(/^(\w+)(?:\.tsx)?$/)
+  if (!componentNameMatch) {
+    spinner.text = 'Component name must have the form `name[.tsx]`'
+    spinner.fail()
+    process.exit(1)
+  }
+  const templateFilename = `${componentNameMatch[1]}.tsx`
 
   if (!templateFilename) {
     spinner.text = 'Component name required'
