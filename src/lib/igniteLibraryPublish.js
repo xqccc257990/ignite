@@ -7,7 +7,6 @@ module.exports = async function(context, gists) {
 
   await createIgniteLibrary(context, spinner, igniteLibraryDir)
   
-  
   // Ask for component name
   const templateFilenameAns = await prompt.ask({
     type: 'input',
@@ -15,6 +14,7 @@ module.exports = async function(context, gists) {
     message: 'What is the filename of your component? (.tsx optional)'
   })
 
+  // Validate component name
   const componentNameMatch =
     templateFilenameAns.location &&
     templateFilenameAns.location.match(/^(\w+)(?:\.tsx)?$/)
@@ -48,10 +48,11 @@ module.exports = async function(context, gists) {
 
   spinner.succeed()
 
+  // Ask for publication name
   const publishNameAns = await prompt.ask({
     type: 'input',
     name: 'name',
-    message: 'What is your component\'s name?'
+    message: 'Name to publish your component under (must be unique in the index):'
   })
   const publishName = publishNameAns.name
 
@@ -60,7 +61,7 @@ module.exports = async function(context, gists) {
   const componentIndex = JSON.parse(filesystem.read(`${igniteLibraryDir}/library-index.json`)).components
   spinner.succeed()
 
-  // Check for existing component with same name + description combination
+  // Check for existing component with same publication name
   spinner.text = 'Checking for conflicting component'
   const existingComponent = componentIndex.find( c => c.name === publishName )
   
@@ -80,6 +81,7 @@ module.exports = async function(context, gists) {
   spinner.text = 'We are go for launch!'
   spinner.succeed()
 
+  // Get component description
   const descriptionResponse = await prompt.ask({
     type: 'input',
     name: 'description',
