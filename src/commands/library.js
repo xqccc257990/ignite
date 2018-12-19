@@ -11,7 +11,6 @@
  * 
  * defaults to infinitered
  */
-const LIBRARY_INDEX_GIST = process.env['LIBRARY_INDEX_GIST'] || '4fe0dfd70e7556f62cccd24c96a06be2'
 const Gists = require('gists');
 const gists = new Gists({
   token: process.env['IGNITE_GITHUB_TOKEN']
