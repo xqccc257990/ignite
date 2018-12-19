@@ -15,51 +15,15 @@ const Gists = require('gists');
 const gists = new Gists({
   token: process.env['IGNITE_GITHUB_TOKEN']
 });
-const getLibraryComponent = require('../lib/getLibraryComponent')
-const completeLibraryTemplate = require('../lib/completeLibraryTemplate')
+const igniteLibrarySearch = require('../lib/igniteLibrarySearch')
 const igniteLibraryPublish = require('../lib/igniteLibraryPublish')
 
 module.exports = async function (context) {
-  const { parameters, filesystem, print, prompt, system } = context
-
-  const searchTerm = parameters.third
+  const { parameters } = context
 
   switch (parameters.second.toLowerCase()) {
     case 'search':
-      if (!searchTerm) {
-        print.error('')
-        print.error(`You must enter a search term (e.g. 'datepicker')`)
-        print.error('')
-      }
-
-      // go out and get the Infinite Red component library
-      const selectedGist = await getLibraryComponent(context, searchTerm)
-
-      // have a new gist, now fill out the template
-      print.info('')
-      print.info(`Generating component`)
-      print.info('')
-
-      const genFile = await prompt.ask({
-        type: 'input',
-        name: 'filename',
-        message: 'Filename to generate:'
-      })
-      const genFilename = genFile.filename + '.tsx'
-
-      print.info('')
-      print.info(`Generating component into ${process.pwd + '/' + genFilename}`)
-      print.info('')
-
-      // then write to the filesystem
-      // TODO genFilename should be name of selected file
-      const componentFilename = Object.keys(selectedGist.body.files)[0]
-      const gistContent = selectedGist.body.files[componentFilename].content
-
-      completeLibraryTemplate(context, gistContent, templateState => {
-        filesystem.write(genFilename, templateState.content)
-      })
-
+      await igniteLibrarySearch(context, gists)
       break
     case 'publish':
       await igniteLibraryPublish(context, gists)
