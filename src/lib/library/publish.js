@@ -91,6 +91,7 @@ module.exports = async function(context, gists) {
 
   // Create the component gist
   spinner.text = 'Adding component gist'
+  let componentGistId
   try {
     const res = await gists.create({
       description: description,
@@ -102,13 +103,13 @@ module.exports = async function(context, gists) {
       }
     })
 
-    const gistId = res.body.id
+    componentGistId = res.body.id
 
     // Add component to library index, stage, commit, and push
     componentIndex.push({
       name: publishName,
       description: description,
-      gist: gistId,
+      gist: componentGistId,
       tags: '',
     })
 
@@ -144,6 +145,26 @@ module.exports = async function(context, gists) {
   }
 
   spinner.succeed()
+
+  // Record ownership of the component
+  try {
+    spinner.text = 'Updating owned component index...'
+    const ownedIndex = JSON.parse(filesystem.read(`${igniteLibraryDir}/owned-components.json`)).ownedComponents
+    ownedIndex.push(componentGistId)
+    console.log(ownedIndex)
+
+    const newOwnedIndexBody = JSON.stringify({ownedComponents: ownedIndex})
+    filesystem.write(`${igniteLibraryDir}/owned-components.json`, newOwnedIndexBody)
+    spinner.succeed()
+  } catch(e) {
+    spinner.fail()
+    spinner.text = `
+      There was a problem recording ownership of your component.
+      Please manually add the componentGistId (${componentGistId}) to ${igniteLibraryDir}/owned-components.json
+      so that you can update the component later.
+    `
+    spinner.fail()
+  }
 
   process.chdir('..')
 
