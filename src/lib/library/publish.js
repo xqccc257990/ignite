@@ -17,7 +17,7 @@ module.exports = async function(context, gists) {
   // Validate component name
   const componentNameMatch =
     templateFilenameAns.location &&
-    templateFilenameAns.location.match(/^(\w+)(?:\.tsx)?$/)
+    templateFilenameAns.location.match(/^([\w-_]+)(?:\.tsx)?$/)
   if (!componentNameMatch) {
     spinner.text = 'Component filename must have the form `name[.tsx]`'
     spinner.fail()
