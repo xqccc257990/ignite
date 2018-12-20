@@ -16,11 +16,18 @@ async function completeLibraryTemplate (context, content, onComplete) {
   function getWorkingContent (content, currentEntryPoint, entry, showCursor=true) {
     var regex = new RegExp('\\$' + currentEntryPoint, "gm")
     const cursor = showCursor ?  '█' : ''
+    var output = content
+    var finished = false
 
     if (content.search(regex) > 0) {
-      return content.replace(regex, entry+cursor)
+      output = content.replace(regex, entry+cursor)
     } else {
-      return false
+      finished = true
+    }
+
+    return {
+      content: output,
+      finished: finished
     }
   }
 
@@ -35,45 +42,55 @@ async function completeLibraryTemplate (context, content, onComplete) {
     screen.draw()
   }
 
-  async function handleInput(templateState, name = '') {
+  async function handleInput(templateState, key = '') {
     print.info(JSON.stringify(templateState))
 
     var nextSite = templateState.currentSite
     var content = templateState.content
     var workingContent = templateState.content
     var entry = templateState.currentEntry
+    var temp
+    var finished = false
 
-    switch (name) {
+    switch (key) {
       case 'CTRL_C':
         terminate()
         break;
       case 'ENTER':
-        content = getWorkingContent(content, nextSite, entry, false)
+        // Remove cursor and advance to next site
+        temp = getWorkingContent(content, nextSite, entry, false)
+        content = temp.content
+        finished = temp.finished
         entry = ''
         nextSite++
         break;
       case 'TAB':
+        // Remove cursor and advance to next site
         content = getWorkingContent(content, nextSite, entry, false)
+        content = temp.content
+        finished = temp.finished
         entry = ''
         nextSite++
       case 'BACKSPACE':
         entry = entry.slice(0,-1)
         break;
       default:
-        entry = entry + name
+        entry = entry + key
         break;
     }
 
-    workingContent = getWorkingContent(content, nextSite, entry)
+    temp = getWorkingContent(content, nextSite, entry)
+    workingContent = temp.content
+    finished = temp.finished
 
     drawTemplate(workingContent)
 
     return {
-      content,
-      workingContent: workingContent,
-      finished: !workingContent,
-      currentSite: nextSite,
-      currentEntry: entry,
+      content, // Just the content
+      workingContent: workingContent, // Content with cursor
+      finished: finished, // Boolean about whether finished
+      currentSite: nextSite, // Number of current site
+      currentEntry: entry, // User input in current site
     }
   }
 
