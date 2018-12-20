@@ -76,7 +76,6 @@ module.exports = async function(context) {
       }
     }
   }
-  console.log(newGistBody)
   try {
     spinner.text = 'Updating component'
     await gists.edit(gistId, newGistBody)
