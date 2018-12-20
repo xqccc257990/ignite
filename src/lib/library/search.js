@@ -4,14 +4,15 @@ module.exports = async function(context) {
   
   const { parameters, filesystem, print, prompt } = context
   const searchTerm = parameters.third
-  if (!searchTerm) {
-    print.error('')
-    print.error(`You must enter a search term (e.g. 'datepicker')`)
-    print.error('')
+
+  var searchFilter
+  if (searchTerm) {
+    searchFilter = component => component.name.includes(searchTerm)
+  } else {
+    searchFilter = component => true
   }
 
   // go out and get the Infinite Red component library
-  const searchFilter = component => component.name.includes(searchTerm)
   const selectedGist = await getLibraryComponent(context, searchTerm, searchFilter)
 
   // have a new gist, now fill out the template

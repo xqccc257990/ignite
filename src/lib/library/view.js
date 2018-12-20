@@ -25,7 +25,13 @@ module.exports = async function(context) {
   const components = JSON.parse(res.body.files['library-index.json'].content).components
 
   // search for a component
-  const searchResults = components.filter(comp => comp.name.includes(searchTerm))
+  var searchFilter
+  if (searchTerm) {
+    searchFilter = component => component.name.includes(searchTerm)
+  } else {
+    searchFilter = component => true
+  }
+  const searchResults = components.filter(searchFilter)
 
   if (!searchResults.length) {
     print.error('No matching components found!')
