@@ -130,7 +130,7 @@ module.exports = async function(context, gists) {
 
     spinner.text = 'Updating library index'
 
-    gists.edit(LIBRARY_INDEX_GIST, {
+    const newGist = {
       description: 'Sample Ignite Library Index',
       files: {
         'library-index.json': {
@@ -138,7 +138,8 @@ module.exports = async function(context, gists) {
           filename: 'library-index.json',
         }
       }
-    })
+    }
+    await gists.edit(LIBRARY_INDEX_GIST, newGist)
   } catch (error) {
     spinner.fail()
     console.log('error', error)
