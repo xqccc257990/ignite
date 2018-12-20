@@ -112,11 +112,12 @@ module.exports = async function(context, gists) {
       gist: componentGistId,
       tags: '',
     })
+    spinner.succeed()
 
   } catch (e) {
-    console.log(e)
+    spinner.text = `Something went wrong creating the component gist. Error: ${e.message}`
+    spinner.fail()
   }
-  spinner.succeed()
 
   const newFileBody = JSON.stringify({components: componentIndex})
   
