@@ -31,7 +31,7 @@ module.exports = async function(context) {
   const genFilename = `${genFileMatch[1]}.tsx`
 
   print.info('')
-  print.info(`Generating component into ${process.pwd + '/' + genFilename}`)
+  print.info(`Generating component into ${process.cwd() + '/' + genFilename}`)
   print.info('')
 
   // then write to the filesystem
