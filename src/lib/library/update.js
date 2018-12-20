@@ -1,4 +1,9 @@
 module.exports = async function(context) {
+  const LIBRARY_INDEX_GIST = process.env['LIBRARY_INDEX_GIST'] || '4fe0dfd70e7556f62cccd24c96a06be2'
+  const Gists = require('gists')
+  const gists = new Gists({
+    token: process.env['IGNITE_GITHUB_TOKEN']
+  })
   const { filesystem, print, prompt, system } = context
   const createIgniteLibrary = require('./createIgniteLibrary')
   const getLibraryComponent = require('./getComponent')
@@ -17,7 +22,7 @@ module.exports = async function(context) {
   // Validate component name
   const componentNameMatch =
     templateFilenameAns.location &&
-    templateFilenameAns.location.match(/^(\w+)(?:\.tsx)?$/)
+    templateFilenameAns.location.match(/^([\w_-]+)(?:\.tsx)?$/)
   if (!componentNameMatch) {
     spinner.text = 'Component filename must have the form `name[.tsx]`'
     spinner.fail()
@@ -35,7 +40,6 @@ module.exports = async function(context) {
   // (file with name matching)
   spinner.text = `Finding your component ${templateFilename}`
   const componentPath = `${process.cwd()}/${templateFilename}`
-
   const componentFileExists = filesystem.exists(componentPath)
   
   // exit gracefully if not
@@ -45,6 +49,7 @@ module.exports = async function(context) {
     spinner.fail()
     process.exit(1)
   }
+  const newFileBody = JSON.stringify(filesystem.read(componentPath))
 
   spinner.succeed()
 
@@ -54,7 +59,31 @@ module.exports = async function(context) {
     return ownedIndex.includes(component.gist)
   }
   const selectedGist = await getLibraryComponent(context, '', ownedFilter)
-  console.log(selectedGist)
+  if(!selectedGist) {
+    spinner.text = 'No gist selected'
+    spinner.fail()
+    process.exit(1)
+  }
+  const gistBody = selectedGist.body
+  const filename = Object.keys(gistBody.files)[0].toString()
+  const gistId = gistBody.id
+
+  const newGistBody = {
+    description: gistBody.description,
+    files: {
+      [filename]: {
+        content: newFileBody,
+      }
+    }
+  }
+  console.log(newGistBody)
+  try {
+    spinner.text = 'Updating component'
+    await gists.edit(gistId, newGistBody)
+    spinner.succeed()
+  }catch(e) {
+    spinner.fail()
+  }
 
   spinner.stop()
   process.exit(1)
