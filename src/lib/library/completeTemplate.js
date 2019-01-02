@@ -43,8 +43,6 @@ async function completeLibraryTemplate (context, content, onComplete) {
   }
 
   async function handleInput(templateState, key = '') {
-    print.info(JSON.stringify(templateState))
-
     var nextSite = templateState.currentSite
     var content = templateState.content
     var workingContent = templateState.content
