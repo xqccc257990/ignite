@@ -1,4 +1,3 @@
-import Shell from 'shelljs'
 import { concat, pathOr, join, map, assoc } from 'ramda'
 import prependIgnite from '../lib/prepend-ignite'
 import findPluginFile from '../lib/find-plugin-file'
@@ -24,22 +23,12 @@ const existsLocally = moduleName => {
   return pathOr(null, ['devDependencies', moduleName], pack)
 }
 
-const removeDependency = moduleName => {
-  console.warn('Removing dev module')
-
-  if (useYarn) {
-    Shell.exec(`yarn remove ${moduleName}`, { silent: true })
-  } else {
-    Shell.exec(`npm rm ${moduleName} --save-dev`, { silent: true })
-  }
-}
-
 module.exports = {
   alias: ['r'],
   description: 'Removes an Ignite CLI plugin.',
   run: async function(toolbox: IgniteToolbox) {
     // grab a fist-full of features...
-    const { print, parameters, prompt, ignite } = toolbox
+    const { print, parameters, prompt, system, ignite } = toolbox
     const { info, warning, xmark, error, success } = print
     const { options } = parameters
 
@@ -111,7 +100,13 @@ module.exports = {
       }
 
       // Uninstall dep from node modules
-      removeDependency(moduleName)
+      console.warn('Removing dev module')
+      if (useYarn) {
+        await system.exec(`yarn remove ${moduleName}`, { silent: true })
+      } else {
+        await system.exec(`npm rm ${moduleName} --save-dev`, { silent: true })
+      }
+
       success(`${xmark}    Removed`)
     } else {
       error("💩  We couldn't find that ignite plugin")

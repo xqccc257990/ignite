@@ -13,14 +13,17 @@ const APP_NAME = 'Foo'
 jest.setTimeout(10 * 60 * 1000)
 
 const originalDir = process.cwd()
+let tempDir = undefined
 const opts = { stdio: 'inherit' }
 
 beforeEach(() => {
-  const tempDir = tempy.directory()
+  tempDir = tempy.directory()
   process.chdir(tempDir)
+  console.log(`switching to ${tempDir} to run "ignite new"`)
 })
 
 afterEach(() => {
+  if (tempDir) filesystem.remove(tempDir)
   process.chdir(originalDir)
 })
 
@@ -35,6 +38,7 @@ test('spins up a Bowser app and performs various checks', async done => {
 
   // Jump into the app directory
   process.chdir(APP_NAME)
+  console.log(`switching to ${tempDir}/${APP_NAME} to check the project`)
 
   // check that the project was generated
   const dirs = filesystem.subdirectories('.')
@@ -67,6 +71,23 @@ test('spins up a Bowser app and performs various checks', async done => {
   expect(filesystem.read(`${process.cwd()}/app/screens/bowser-screen/bowser-screen.tsx`)).toContain(
     'export const BowserScreen',
   )
+
+  // beforehand, check packageJSON
+  let packageJSON = JSON.parse(filesystem.read(`${process.cwd()}/package.json`))
+  expect(packageJSON.dependencies['left-pad']).toBeUndefined()
+  expect(packageJSON.dependencies['ignite-test']).toBeUndefined()
+
+  // add a plugin
+  await system.run(`${IGNITE} add ${__dirname}/ignite-test`)
+  packageJSON = JSON.parse(filesystem.read(`${process.cwd()}/package.json`))
+  expect(packageJSON.dependencies['left-pad']).toContain('.')
+  expect(packageJSON.devDependencies['ignite-test']).toContain('/ignite-test')
+
+  // remove a plugin
+  await system.run(`${IGNITE} remove ignite-test`)
+  packageJSON = JSON.parse(filesystem.read(`${process.cwd()}/package.json`))
+  expect(packageJSON.dependencies['left-pad']).toBeUndefined()
+  expect(packageJSON.devDependencies['ignite-test']).toBeUndefined()
 
   done()
 })
